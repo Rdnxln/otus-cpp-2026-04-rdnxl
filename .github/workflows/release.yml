@@ -23,6 +23,7 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.MYPT }}
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true
         with:
           tag_name: ${{ github.run_number }}
           release_name: Release ${{ github.run_number }}
@@ -33,6 +34,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.MYPT }}
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
