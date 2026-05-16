@@ -13,7 +13,7 @@ add_executable(ip_filter_cli main.cpp)
 add_library(ip_filter lib.cpp)
 
 set_target_properties(ip_filter_cli ip_filter PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 

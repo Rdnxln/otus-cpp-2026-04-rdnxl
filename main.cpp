@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 #include <tuple>
-#include <map>
+#include <set>
+#include <optional>
 
 // ("",  '.') -> [""]
 // ("11", '.') -> ["11"]
@@ -33,10 +34,10 @@ std::vector<std::string> split(const std::string &str, char d)
     return r;
 }
 
-std::tuple<unsigned char,
-            unsigned char,
-            unsigned char,
-            unsigned char> convertIP( const std::string &str, char d )
+std::optional<std::tuple <unsigned char,
+                          unsigned char,
+                          unsigned char,
+                          unsigned char> > convertIP( const std::string &str, char d )
 {
   unsigned char c[4] = {0, 0, 0, 0};
   int count = 0;
@@ -52,11 +53,16 @@ std::tuple<unsigned char,
         value = std::stoi(str.substr(start, stop - start));
     } catch (const std::invalid_argument& e) {
         // Строка не содержит чисел
-      return {};
+      return std::nullopt;
     } catch (const std::out_of_range& e) {
         // Число не влезает в int
-      return {};
+      return std::nullopt;
     }
+
+    // 0.0.0.0 - это валидный IP (все интерфейсы хоста)
+    // 255.255.255.255 - тоже валидный IP (широковещательный)
+    if( value < 0 || value > 255 )
+      return std::nullopt;
 
     if( count > 3) break;
     c[count++] = static_cast<unsigned char>(value);
@@ -69,16 +75,22 @@ std::tuple<unsigned char,
     value = std::stoi(str.substr(start, stop - start));
   } catch (const std::invalid_argument& e) {
     // Строка не содержит чисел
-    return {};
+    return std::nullopt;
   } catch (const std::out_of_range& e) {
     // Число не влезает в int
-    return {};
+    return std::nullopt;
   }
+
+  if( value < 0 || value > 255 )
+    return std::nullopt;
 
   if( count == 3)
     c[count] = static_cast<unsigned char>(value);
+  else
+    return std::nullopt;
 
-  return { c[0], c[1], c[2], c[3] };
+  return std::make_tuple( c[0], c[1], c[2], c[3] );
+//return { c[0], c[1], c[2], c[3] };
 }
 
 void print_ip(const std::tuple<unsigned char, unsigned char, unsigned char, unsigned char>& ip) {
@@ -88,70 +100,45 @@ void print_ip(const std::tuple<unsigned char, unsigned char, unsigned char, unsi
               << (int)std::get<3>(ip) << "\n";
 }
 
-struct IP_cmp_Greater {
-    bool operator()(const std::tuple<unsigned char, unsigned char, unsigned char, unsigned char>& lhs,
-                    const std::tuple<unsigned char, unsigned char, unsigned char, unsigned char>& rhs) const {
-//        if (std::get<0>(lhs) != std::get<0>(rhs)) return std::get<0>(lhs) > std::get<0>(rhs);
-//        if (std::get<1>(lhs) != std::get<1>(rhs)) return std::get<1>(lhs) > std::get<1>(rhs);
-//        if (std::get<2>(lhs) != std::get<2>(rhs)) return std::get<2>(lhs) > std::get<2>(rhs);
-//        return std::get<3>(lhs) > std::get<3>(rhs);
-
-        return std::tie(lhs) > std::tie(rhs);
-      };
-};
+template <typename T, typename... Args>
+bool find_in_tuple(const std::tuple<Args...>& t, const T& value) {
+    return std::apply([&value](const auto&... args) {
+        return ((args == value) || ...);
+    }, t);
+}
 
 int main( /* int argc, char const *argv[] */
         )
 {
     try
     {
-        std::map<std::tuple<unsigned char, unsigned char, unsigned char, unsigned char>, // IP-адрес, разложенный в кортеж
-                            int,             // число повторений данного адреса (т.к. у нас сортировка, сходные адреса идут подряд)
-                            IP_cmp_Greater>  // сравнение кортежей
-                            ip_pool;
+        std::multiset< std::tuple<unsigned char, unsigned char, unsigned char, unsigned char>, // IP-адрес, разложенный в кортеж
+                       std::greater<>
+                     > ip_pool;
 
         for(std::string line; std::getline(std::cin, line);)
         {
           std::vector<std::string>v = split(line, '\t');
-          auto new_ip = convertIP(v.at(0), '.');
+          if( v.empty() )
+            continue;
 
-          auto it = ip_pool.find(new_ip);
-          if (it != ip_pool.end()) {     // если такой IP есть
-            int curr_value = it->second; // увеличиваем ключ (число повторений)
-            it->second = curr_value+1; 
-          } else {                       // иначе IP новый
-            ip_pool.insert({new_ip, 1}); // встретился пока 1 раз
-          }
-        }
+          auto new_ip = convertIP( v.front(), '.' );
+          if( !new_ip )
+            continue;
 
-        // TODO reverse lexicographically sort
-        // ^^^- уже отсортировано "by-design" при вставке в map с использованием функции сравнения ключей
-
+          auto ip = *new_ip;
 /*
-        for(std::vector<std::vector<std::string> >::const_iterator ip = ip_pool.cbegin(); ip != ip_pool.cend(); ++ip)
-        {
-            for(std::vector<std::string>::const_iterator ip_part = ip->cbegin(); ip_part != ip->cend(); ++ip_part)
-            {
-                if (ip_part != ip->cbegin())
-                {
-                    std::cout << ".";
-
-                }
-                std::cout << *ip_part;
-            }
-            std::cout << std::endl;
-        }
+          if( find_in_tuple( ip , 5 ) )
+            std::cout << "ooops" << std::endl;
  */
-
-        for (const auto& pair : ip_pool) {
-          const auto& ip     = pair.first;  // key
-          const  int& repeat = pair.second; // val
-
-          for( int j=0; j<repeat; j++)
-            print_ip(ip);
+          ip_pool.insert( ip );
         }
- 
- 
+
+        for (const auto& ip : ip_pool) {
+          print_ip(ip);
+        }
+
+
         // 222.173.235.246
         // 222.130.177.64
         // 222.82.198.61
@@ -197,13 +184,9 @@ int main( /* int argc, char const *argv[] */
           ;
         };
 
-        for (const auto& pair : ip_pool) {
-          const auto& ip     = pair.first;  // key
-          const  int& repeat = pair.second; // val
-
+        for (const auto& ip : ip_pool) {
           if(filter(ip, 1, -1, -1, -1))
-            for( int j=0; j<repeat; j++)
-              print_ip(ip);
+            print_ip(ip);
         }
 
         // 1.231.69.33
@@ -215,14 +198,10 @@ int main( /* int argc, char const *argv[] */
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
 
-        for (const auto& pair : ip_pool) {
-          const auto& ip     = pair.first;  // key
-          const  int& repeat = pair.second; // val
-
+        for (const auto& ip : ip_pool) {
           // Выводим ключ и значение
           if(filter(ip, 46, 70, -1, -1))
-            for( int j=0; j<repeat; j++)
-              print_ip(ip);
+            print_ip(ip);
         }
 
         // 46.70.225.39
@@ -233,6 +212,7 @@ int main( /* int argc, char const *argv[] */
         // TODO filter by any byte and output
         // ip = filter_any(46)
 
+/*
         auto filter_any = [](const auto& ip, unsigned char c) {
           //constexpr std::size_t num_c = std::tuple_size<decltype(ip)>::value;
           return    std::get<0>(ip) == c
@@ -240,16 +220,12 @@ int main( /* int argc, char const *argv[] */
                  || std::get<2>(ip) == c
                  || std::get<3>(ip) == c ;
         };
+ */
 
-
-        for (const auto& pair : ip_pool) {
-          const auto& ip     = pair.first;  // key
-          const  int& repeat = pair.second; // val
-
-          // Выводим ключ и значение
-          if(filter_any(ip, 46))
-            for( int j=0; j<repeat; j++)
-              print_ip(ip);
+        for (const auto& ip : ip_pool) {
+//        if(filter_any(ip, 46))    // для известного числа элементов кортежа
+          if( find_in_tuple( ip, (unsigned char)46) )  // для неизвестного числа элементов ...
+            print_ip(ip);
         }
 
         // 186.204.34.46
