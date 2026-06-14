@@ -2,6 +2,8 @@
 #include <iostream>
 #include <map>
 #include <memory>    // для std::allocator_traits
+#include <limits>
+#include <stdexcept>
 #include "slist.hpp"
 
 // Управляющая структура, которая владеет зарезервированным блоком памяти
@@ -97,9 +99,31 @@ private:
     std::shared_ptr<FixedBuffer> buffer_;
 };
 
-constexpr int fact( int i )
+/*
+int fact( int i )
 {
-  return ( i == 0 || i == 1 ) ? 1 : i * fact( i - 1);
+    return ( i == 0 || i == 1 ) ? 1 : i * fact( i - 1 );
+}
+ */
+
+int fact( int i )
+{
+    if( i < 0 ) {
+        throw std::invalid_argument("Факториал отрицательного числа не существует");
+    }
+
+    if( i == 1 ||
+        i == 0 ) return 1;
+
+    int f = 1;
+    for( int k = 1; k <= i; k++ )
+    {
+        if( f > std::numeric_limits<int>::max() / k ) {
+            throw std::overflow_error("Ошибка переполнения");
+        }
+        f *= k;
+    }
+    return f;
 }
 
 #define LIMIT_ELEMENTS (10)
@@ -113,9 +137,15 @@ int main()
     std::map<int, int> map1;
 
 //- заполнение 10 элементами, где ключ - это число от 0 до 9, а значение - факториал ключа
-    for(int k=0; k<LIMIT_ELEMENTS; ++k)
-        map1[k]=fact(k);
-
+    for(int k=0; k<LIMIT_ELEMENTS; ++k) {
+        try {
+          int val = fact(k);
+          map1[k]=val;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Поймана стандартная ошибка: " << e.what() << std::endl;
+        }
+    }
 //- создание экземпляра std::map<int, int> с новым аллокатором, ограниченным 10 элементами
     FixedBlockAllocator<std::pair<const int, int>> my_alloc1(LIMIT_ELEMENTS);
     std::map<int,
@@ -124,9 +154,15 @@ int main()
              FixedBlockAllocator<std::pair<const int, int>>> map2(my_alloc1);
 
 //- заполнение 10 элементами, где ключ - это число от 0 до 9, а значение - факториал ключа
-    for(int k=0; k<LIMIT_ELEMENTS; ++k)
-        map2[k]=fact(k);
-
+    for(int k=0; k<LIMIT_ELEMENTS; ++k) {
+        try {
+          int val = fact(k);
+          map2[k]=val;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Поймана стандартная ошибка: " << e.what() << std::endl;
+        }
+    }
 //- вывод на экран всех значений (ключ и значение разделены пробелом) хранящихся в контейнере
     for( const auto& [ key , value ] : map1 )
         std::cout << "map1 " << key << " : " << value << std::endl;
@@ -164,8 +200,8 @@ int main()
 //  Проверка контейнера на аллокаторе с ограничениями
     try {
         // пробуем добавить "лишний" 11-ый элемент в контейнер с ограничением в 10 элементов
-        map2[10]=fact(10);
-        // list2.push_front(10);
+        map2[10]=fact(1);
+        // list2.push_front(1);
     } catch (const std::bad_alloc& e) {
         std::cout << "\nПерехвачено исключение: Превышен лимит выделения элементов.\n";
     }
