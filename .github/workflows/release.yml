@@ -42,6 +42,6 @@ jobs:
           name: Release 0.0.${{ github.run_number }}
           draft: false
           prerelease: false
-          files: ./allocator-0.0.${{ github.run_number }}-Linux.deb
+          files: ./allocator_prj-0.0.${{ github.run_number }}-Linux.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
