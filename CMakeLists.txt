@@ -3,26 +3,26 @@ cmake_minimum_required(VERSION 3.12)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 
-project(print_ip_prj VERSION ${PROJECT_VESRION})
+project(print-ip VERSION ${PROJECT_VESRION})
 
 option(WITH_BOOST_TEST "Whether to build Boost test" ON)
 
 configure_file(version.h.in version.h)
 
 add_executable(print_ip main.cpp)
-add_library(print_ip_prj lib.cpp)
+add_library(print-ip lib.cpp)
 
-set_target_properties(print_ip print_ip_prj PROPERTIES
+set_target_properties(print_ip print-ip PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(print_ip_prj
+target_include_directories(print-ip
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
 target_link_libraries(print_ip PRIVATE
-    print_ip_prj
+    print-ip
 )
 
 if(WITH_BOOST_TEST)
@@ -41,7 +41,7 @@ if(WITH_BOOST_TEST)
 
     target_link_libraries(test_version
         ${Boost_LIBRARIES}
-        print_ip_prj
+        print-ip
     )
 endif()
 
@@ -49,7 +49,7 @@ if (MSVC)
     target_compile_options(print_ip PRIVATE
         /W4
     )
-    target_compile_options(print_ip_prj PRIVATE
+    target_compile_options(print-ip PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
@@ -61,7 +61,7 @@ else ()
     target_compile_options(print_ip PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
-    target_compile_options(print_ip_prj PRIVATE
+    target_compile_options(print-ip PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_BOOST_TEST)

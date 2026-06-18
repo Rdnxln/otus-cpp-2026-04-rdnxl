@@ -66,6 +66,6 @@ jobs:
           name: Release 0.0.${{ github.run_number }}
           draft: false
           prerelease: false
-          files: ./print-ip-prj-0.0.${{ github.run_number }}-Linux.deb
+          files: ./print-ip-0.0.${{ github.run_number }}-Linux.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
