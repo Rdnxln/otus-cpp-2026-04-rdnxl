@@ -1,0 +1,5 @@
+Тестирование публикации документации:
+
+1) Настройка учетки на github:
+Settings -> Pages -> Build and deployment -> Source
+и выберите значение GitHub Actions (вместо Deploy from a branch)
