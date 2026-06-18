@@ -1,0 +1,62 @@
+#---------------------------------------------------------------------------
+# Проект и базовая информация
+#---------------------------------------------------------------------------
+PROJECT_NAME           = "IP Printer"
+PROJECT_NUMBER         = "1.0.0"
+PROJECT_BRIEF          = "Система условного вывода IP-адресов на базе SFINAE"
+OUTPUT_DIRECTORY       = docs
+OUTPUT_LANGUAGE        = Russian
+
+#---------------------------------------------------------------------------
+# Извлечение и парсинг кода (Включая EXTRACT_ALL)
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_PRIV_VIRTUAL   = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
+
+# Позволяет Doxygen корректно обрабатывать современные конструкции C++
+RECURSIVE              = YES
+INPUT                  = .
+FILE_PATTERNS          = *.cpp *.h *.hpp
+
+#---------------------------------------------------------------------------
+# Настройки вывода (Форматы документации)
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+# Полезно включить поиск по сгенерированной HTML-странице
+SEARCHENGINE           = YES
+
+# По умолчанию генерация тяжелого LaTeX отключена
+GENERATE_LATEX         = NO
+
+#---------------------------------------------------------------------------
+# Настройки Graphviz / Dot (Включая HAVE_DOT)
+#---------------------------------------------------------------------------
+HAVE_DOT               = YES
+
+# Использовать встроенные шрифты Dot для корректного отображения кириллицы
+DOT_FONTNAME           = Helvetica
+DOT_FONTSIZE           = 10
+
+# Настройки генерации графов (какие именно схемы строить)
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+GROUP_GRAPHS           = YES
+TEMPLATE_RELATIONS     = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+
+# Опции отрисовки графов
+GRAPH_GRAPHICAL_NUM    = YES
+DOT_GRAPH_MAX_NODES    = 50
+MAX_DOT_GRAPH_DEPTH    = 0
+DOT_TRANSPARENT        = YES
+
+# Использовать многопоточность Graphviz для ускорения генерации картинок
+DOT_NUM_THREADS        = 4

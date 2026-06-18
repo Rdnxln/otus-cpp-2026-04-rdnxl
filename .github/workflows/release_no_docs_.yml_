@@ -9,11 +9,6 @@ on:
       - HW03
       - HW04
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libboost-test-dev doxygen graphviz -y
+          sudo apt-get install libboost-test-dev -y
 
       - name: Configure CMake
         run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_BOOST_TEST=ON
@@ -40,25 +35,7 @@ jobs:
       - name: Package
         run: cmake --build . --target package
 
-      # Генерация документации (только для HW04)
-      - name: Generate Documentation
-        if: github.ref == 'refs/heads/HW04'
-        run: doxygen Doxyfile
-
-      # Загрузка артефакта страниц (только для HW04)
-      - name: Upload Pages Artifact
-        if: github.ref == 'refs/heads/HW04'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs/html
-
-      # Деплой на GitHub Pages (только для HW04)
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/HW04'
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      # Создание релиза (выполняется для всех веток из on.push.branches)
+      # Создание релиза и загрузка артефакта через один современный экшен
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v2
         with:
