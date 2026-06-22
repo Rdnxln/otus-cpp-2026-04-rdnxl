@@ -224,10 +224,7 @@ int main() {
     print_ip( std::vector<int>{ 100, 200, 300, 400 } ); // 100.200.300.400
     print_ip( std::list<short>{ 400, 300, 200, 100 } ); // 400.300.200.100
 
-    print_ip( std::tuple( 123, 456, 789, 0 ) );    // 123.456.789.0
-    print_ip( std::tuple( "D0", "AC", "0F", "FE" ) );
-    print_ip( std::tuple( 1234 ) );                  // 1234
-
+    print_ip( std::make_tuple( 123, 456, 789, 0 ) );    // 123.456.789.0
     // Раскомментирование строки ниже вызовет ошибку компиляции (типы не совпадают):
     // print_ip( std::make_tuple(123, 456.0, "error") );
 
